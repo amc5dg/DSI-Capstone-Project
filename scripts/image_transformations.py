@@ -65,7 +65,7 @@ def vert_mirror(ary):
     return ary[::-1,:]
 
 
-def translate_and_crop(ary, f = 2):
+def translate_and_crop(ary, f = 2, xform = True):
     '''
     input: np array, f (fraction of cropping desired)
     flips array vertically
@@ -74,8 +74,15 @@ def translate_and_crop(ary, f = 2):
     # center coordinates (and half-widths) of array
     xc = ary.shape[0]/2
     yc = ary.shape[1]/2
-    # randomly choose x and y center of cropped image from a normal distribution around the actual image center
-    x_center = int(round(scs.norm(xc, np.sqrt(xc)).rvs(), 0))
-    y_center = int(round(scs.norm(yc, np.sqrt(yc)).rvs(), 0))
+
+    if xform:
+        # randomly choose x and y center of cropped image from a normal distribution around the actual image center
+        x_center = int(round(scs.norm(xc, np.sqrt(xc)/2).rvs(), 0))
+        y_center = int(round(scs.norm(yc, np.sqrt(yc)/2).rvs(), 0))
+    else:
+        # keep original x and y center
+        x_center = xc
+        y_center = yc
+
     # returns array with new center and cropped by factor f
-    return ary[x_center - xc/f:x_center + xc/f, y_center - yc/f:y_center + yc/f]
+    return ary[x_center - int(xc/f) : x_center + int(xc/f), y_center - int(yc/f) : y_center + int(yc/f)]
