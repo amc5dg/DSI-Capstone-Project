@@ -1,6 +1,14 @@
 import numpy as np
 import scipy.stats as scs
 
+def rotate_0(ary):
+    '''
+    input: np array
+    leaves array as is
+    output: np array
+    '''
+    return ary
+
 
 def rotate_90(ary):
     '''
@@ -8,7 +16,7 @@ def rotate_90(ary):
     rotates array by 90 degrees
     output: np array
     '''
-    return ary.swapaxes(0,1)[:,::-1]
+    return ary.swapaxes(0,1)[:,::-1,:]
 
 
 def rotate_180(ary):
@@ -17,7 +25,7 @@ def rotate_180(ary):
     rotates array by 180 degrees
     output: np array
     '''
-    return ary[::-1,::-1]
+    return ary[::-1,::-1,:]
 
 
 def rotate_270(ary):
@@ -26,7 +34,7 @@ def rotate_270(ary):
     rotates array by 270 degrees
     output: np array
     '''
-    return ary.swapaxes(0,1)[::-1,:]
+    return ary.swapaxes(0,1)[::-1,:,:]
 
 
 def transpose(ary):
@@ -35,7 +43,7 @@ def transpose(ary):
     flips array over diagonal
     output: np array
     '''
-    return ary.T
+    return ary.swapaxes(0,1)
 
 
 def reflect_diagonal(ary):
@@ -44,7 +52,7 @@ def reflect_diagonal(ary):
     flips array over top-right/bottom-left diagonal
     output: np array
     '''
-    x.T[::-1, ::-1]
+    return ary.swapaxes(0,1)[::-1, ::-1, :]
 
 
 def horiz_mirror(ary):
@@ -53,7 +61,7 @@ def horiz_mirror(ary):
     flips array horizontally
     output: np array
     '''
-    return ary[:,::-1]
+    return ary[:,::-1, :]
 
 
 def vert_mirror(ary):
@@ -62,10 +70,10 @@ def vert_mirror(ary):
     flips array vertically
     output: np array
     '''
-    return ary[::-1,:]
+    return ary[::-1,:, :]
 
 
-def translate_and_crop(ary, f = 2, xform = True):
+def translate_and_crop(ary, f = 2, xform = False):
     '''
     input: np array, f (fraction of cropping desired)
     flips array vertically
@@ -85,4 +93,4 @@ def translate_and_crop(ary, f = 2, xform = True):
         y_center = yc
 
     # returns array with new center and cropped by factor f
-    return ary[x_center - int(xc/f) : x_center + int(xc/f), y_center - int(yc/f) : y_center + int(yc/f)]
+    return ary[x_center - int(xc/f) : x_center + int(xc/f), y_center - int(yc/f) : y_center + int(yc/f) :]

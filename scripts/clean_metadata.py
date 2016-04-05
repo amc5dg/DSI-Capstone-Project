@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-path_to_project_data = '~/science/DSI/DSI-Capstone-Project/data/'
+path_to_project_data = 'Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
 galaxy_types = ['spiral', 'elliptical', 'merger', 'dont_know']
 
 def clean_galaxies():
