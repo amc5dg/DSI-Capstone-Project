@@ -1,14 +1,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
-import scipy.stats as scs
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
-from data_cleaning import *
 
 '''
 Galaxy Zoo Net Architecture:
@@ -46,17 +44,7 @@ def convert_targets(targets):
     return pd.get_dummies(targets).values
 
 
-def make_normal_weights(dim1, dim2, std):
-    '''
-    input: dim1 (int), dim2 (int), std (float)
-    creates np array of normally distributed weights with shape (dim1, dim2) about mean 0 with standard deviation = std
-    dim1 should be equal to the number of nodes in previous layer, dim2 equal to the number of nodes in current layer
-    output: weights (np array)
-    '''
-    return scs.norm(0, std).rvs((dim1, dim2))
-
-
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 40):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 3):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -100,15 +88,12 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     model.add(Flatten())
 
     # first dense layer
-    # model.add(MaxoutDense(2048, init='normal'))
-    weights1 = make_normal_weights(512, 2048, .001)
-    model.add(Dense(2048, weights=weights1))
-    model.add(Activation('relu'))
+    model.add(MaxoutDense(2048))
+    #model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     # second dense layer
-    weights2 = make_normal_weights(2048, 2048, .001)
-    model.add(MaxoutDense(2048, weights=weights2))
+    model.add(MaxoutDense(2048, init='normal'))
     #model.add(Activation('maxout'))
     model.add(Dropout(0.5))
 
@@ -118,25 +103,23 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     # model.add(Dropout(0.25))
 
     # output layer
-    weights3 = make_normal_weights(2048, 3, .01)
-    model.add(Dense(3, weights=weights3))
-    # model.add(Dense(3, init='normal'))
+    model.add(Dense(3, init='normal'))
     model.add(Activation('softmax'))
 
     # initializes optimizer
-    # sgd = SGD(lr=0.04, decay=1e-6, momentum=0.9, nesterov=True)
-    sgd = SGD(lr=0.001)
+    sgd = SGD(lr=0.04, decay=1e-6, momentum=0.9, nesterov=True)
 
     # compiles and fits model, computes accuracy
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
-
+    # print(np.unique(y_train))
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
-    return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
+    return model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
 
 
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = get_data()
+    files = ['X_train.npy', 'X_test.npy', 'y_train.npy', 'y_test.npy']
+    X_train, X_test, y_train, y_test = (np.load(file) for file in files)
     # np.random.seed(18)  # for reproducibility
 
-    model, results = nn_model(X_train, y_train, X_test, y_test)
+    results = nn_model(X_train, y_train, X_test, y_test)

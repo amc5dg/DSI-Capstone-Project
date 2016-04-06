@@ -79,7 +79,7 @@ def augment_data(im_list, targets, test=False):
     else:
         # number of copies of images to make to get balanced classes in training set
         #n_copies = int(round(333,000./len(im_list), 0))
-        n_copies = int(round(1000./len(im_list), 0))
+        n_copies = int(round(16667./len(im_list), 0))
         # extends list of targets
         targets = np.array(targets.flatten().tolist()*n_copies)
         # randomly transforms and crops each image, making n_copies altered images
