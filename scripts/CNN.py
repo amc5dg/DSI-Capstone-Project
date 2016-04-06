@@ -7,7 +7,6 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
-from data_cleaning import *
 
 '''
 Galaxy Zoo Net Architecture:
@@ -119,7 +118,8 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
 
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = get_data()
+    files = ['X_train.npy', 'X_test.npy', 'y_train.npy', 'y_test.npy']
+    X_train, X_test, y_train, y_test = (np.load(file) for file in files)
     # np.random.seed(18)  # for reproducibility
 
     results = nn_model(X_train, y_train, X_test, y_test)
