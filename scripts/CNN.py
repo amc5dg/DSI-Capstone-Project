@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 
 from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation, Flatten
+from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
@@ -24,7 +24,7 @@ dropout 0.5 in dense layers
 6) dense, 2048 features, maxout(2), weights N(0, 0.001)
 7) dense, 3, softmax????
 '''
-weights1 = scs
+
 def scale_features(X):
     '''
     input: X (np array of any dimensions)
@@ -45,7 +45,7 @@ def convert_targets(targets):
     return pd.get_dummies(targets).values
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 3, nb_epoch = 4):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 3):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -71,32 +71,32 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 3, 
 
     # first convolutional layer and subsequent pooling
     # model.add(Convolution2D(32, 1, 1, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', subsample=(1, 1)))
-    model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf'))
+    model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # second convolutional layer and subsequent pooling
-    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu'))
+    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='normal'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # third convolutional layer
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu'))
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
 
     # fourth convolutional layer and subsequent pooling
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu'))
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # flattens images to go into dense layers
     model.add(Flatten())
 
     # first dense layer
-    model.add(Dense(2048, init='normal'))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.25))
+    model.add(MaxoutDense(2048))
+    #model.add(Activation('relu'))
+    model.add(Dropout(0.5))
 
     # second dense layer
-    model.add(Dense(2048, init='normal'))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.25))
+    model.add(MaxoutDense(2048, init='normal'))
+    #model.add(Activation('maxout'))
+    model.add(Dropout(0.5))
 
     # test dense layer, remove
     # model.add(Dense(50, init='normal'))
@@ -120,6 +120,6 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 3, 
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = get_data()
-    np.random.seed(18)  # for reproducibility
+    # np.random.seed(18)  # for reproducibility
 
     results = nn_model(X_train, y_train, X_test, y_test)
