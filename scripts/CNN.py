@@ -2,13 +2,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
 import scipy.stats as scs
+import pandas as pd 
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
-from data_cleaning import *
+from sklearn.metrics import classification_report, confusion_matrix
 
 '''
 Galaxy Zoo Net Architecture:
@@ -25,6 +26,8 @@ dropout 0.5 in dense layers
 6) dense, 2048 features, maxout(2), weights N(0, 0.001)
 7) dense, 3, softmax????
 '''
+
+path_to_project_data = '/home/ubuntu/DSI-Capstone-Project/data/'
 
 def scale_features(X):
     '''
@@ -101,31 +104,26 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
 
     # first dense layer
     # model.add(MaxoutDense(2048, init='normal'))
-    weights1 = make_normal_weights(512, 2048, .001)
-    model.add(Dense(2048, weights=weights1))
+    # weights1 = make_normal_weights(512, 2048, .001)
+    model.add(Dense(2048, init='uniform'))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     # second dense layer
-    weights2 = make_normal_weights(2048, 2048, .001)
-    model.add(MaxoutDense(2048, weights=weights2))
-    #model.add(Activation('maxout'))
+    # weights2 = make_normal_weights(2048, 2048, .001)
+    # model.add(MaxoutDense(2048, weights=weights2))
+    model.add(MaxoutDense(2048))
     model.add(Dropout(0.5))
 
-    # test dense layer, remove
-    # model.add(Dense(50, init='normal'))
-    # model.add(Activation('relu'))
-    # model.add(Dropout(0.25))
-
     # output layer
-    weights3 = make_normal_weights(2048, 3, .01)
-    model.add(Dense(3, weights=weights3))
-    # model.add(Dense(3, init='normal'))
+    # weights3 = make_normal_weights(2048, 3, .01)
+    # model.add(Dense(3, weights=weights3))
+    model.add(Dense(3, init='normal'))
     model.add(Activation('softmax'))
 
     # initializes optimizer
     # sgd = SGD(lr=0.04, decay=1e-6, momentum=0.9, nesterov=True)
-    sgd = SGD(lr=0.001)
+    sgd = SGD(lr=0.005)
 
     # compiles and fits model, computes accuracy
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
@@ -134,9 +132,21 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
 
 
+def scores(model, X_test, y_test):
+    '''
+    input: model (keras model), X_test ( 4D np array of images), y_test (1D np array of labels)
+    output: None
+    '''
+    y_pred = model.predict_classes(X_test)
+    y_true = pd.get_dummies(y_test).values.argmax(1)
+    print classification_report(y_true, y_pred)
+    print confusion_matrix(y_true, y_pred)
+
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = get_data()
+    files = ['X_train.npy', 'X_test.npy', 'y_train.npy', 'y_test.npy']
+    X_train, X_test, y_train, y_test = (np.load(path_to_project_data+file) for file in files)
     # np.random.seed(18)  # for reproducibility
 
     model, results = nn_model(X_train, y_train, X_test, y_test)
+    print scores(model, X_test, y_test)
