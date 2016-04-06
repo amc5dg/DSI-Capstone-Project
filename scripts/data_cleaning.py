@@ -119,5 +119,10 @@ def get_data():
     return np.array(train_images)[inds], np.array(test_images), np.array(train_targets)[inds], np.array(test_targets)
 
 
-# if __name__ == '__main__':
-#     X_train, X_test, y_train, y_test = get_data()
+if __name__ == '__main__':
+    X_train, X_test, y_train, y_test = get_data()
+    # saving files so that they don't need to be re-written each time
+    np.save(X_train.npy, X_train)
+    np.save(X_test.npy, X_test)
+    np.save(y_train.npy, y_train)
+    np.save(y_test.npy, y_test)
