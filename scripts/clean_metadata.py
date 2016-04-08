@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-path_to_project_data = 'Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
-galaxy_types = ['spiral', 'elliptical', 'merger', 'dont_know']
+path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
+galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
 
 def clean_galaxies():
     '''
@@ -17,11 +17,9 @@ def clean_galaxies():
     galaxies.columns = ['RA', 'DEC', 'nvotes', 'elliptical', 'clockwise', \
         'anticlockwise', 'edge_on_disk', 'dont_know', 'merger', 'combined_spiral']
     # creates spiral column with all spiral classes
-    galaxies['spiral'] = galaxies.clockwise + galaxies.anticlockwise + \
-        galaxies.edge_on_disk + galaxies.combined_spiral
-    # dropping other spiral columns
-    galaxies.drop(['clockwise', 'anticlockwise', 'edge_on_disk', \
-        'combined_spiral'], axis=1, inplace=True)
+    galaxies['face_on_spiral'] = galaxies.clockwise + galaxies.anticlockwise
+    # dropping directional spiral columns and combined for now
+    galaxies.drop(['clockwise', 'anticlockwise', 'combined_spiral'], axis=1, inplace=True)
     # gets rid of random nan row with nans
     galaxies.dropna(axis=0, inplace=True)
     # adds column listing the max class
@@ -44,13 +42,13 @@ def max_col(df, col_names):
     return pd.Series(max_class, name='type')
 
 
-def separate_galaxies(galaxies, clss):
+def separate_galaxies(galaxies, clss, thresh=0.6):
     '''
     input: galaxies (pd DataFrame), type (str)
     output: subsetted DataFrame
     subsets galaxies by class and takes only those with greater than 50% confidence
     '''
-    df = galaxies[(galaxies.type == clss) & (galaxies[clss] >= 0.5)]
+    df = galaxies[(galaxies.type == clss) & (galaxies[clss] >= thresh)]
     df.to_csv(path_to_project_data+'{}.csv'.format(clss), index=False)
     return df
 
