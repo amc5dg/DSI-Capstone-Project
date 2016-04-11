@@ -8,6 +8,7 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
+from keras.callbacks import EarlyStopping
 
 from sklearn.metrics import classification_report, confusion_matrix
 
@@ -125,6 +126,10 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 4,
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
    
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
+    
+    # Early stopping if validation loss is plateauing
+    model.add(EarlyStopping(monitor='val_loss', patience=1, verbose=1, mode='auto'))
+
     return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
 
 

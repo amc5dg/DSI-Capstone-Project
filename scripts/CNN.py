@@ -59,7 +59,7 @@ def make_normal_weights(dim1, dim2, std):
     return scs.norm(0, std).rvs((dim1, dim2))
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 40):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 4, nb_epoch = 30):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -70,7 +70,7 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     n_train, n_test = X_train.shape[0], X_test.shape[0]
 
     # scale images
-    # X_train, X_test = scale_features(X_train), scale_features(X_test)
+    X_train, X_test = scale_features(X_train), scale_features(X_test)
 
     # reshape images because keras is being picky
     X_train = X_train.reshape(n_train, 60, 60, 3)
@@ -84,7 +84,6 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     model = Sequential()
 
     # first convolutional layer and subsequent pooling
-    # model.add(Convolution2D(32, 1, 1, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', subsample=(1, 1)))
     model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
     # model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -118,12 +117,11 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     # output layer
     # weights3 = make_normal_weights(2048, 3, .01)
     # model.add(Dense(3, weights=weights3))
-    model.add(Dense(3, init='normal'))
+    model.add(Dense(4, init='normal'))
     model.add(Activation('softmax'))
 
     # initializes optimizer
-    # sgd = SGD(lr=0.04, decay=1e-6, momentum=0.9, nesterov=True)
-    sgd = SGD(lr=0.005)
+    sgd = SGD(lr=0.005, decay = 1e-6, momentum=0.9, nesterov=True)
 
     # compiles and fits model, computes accuracy
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
@@ -150,3 +148,8 @@ if __name__ == '__main__':
 
     model, results = nn_model(X_train, y_train, X_test, y_test)
     scores(model, X_test, y_test)
+
+    # saving model and model weights when I get a good net trained
+    # model.save_weights('model_weights.h5')
+    # json_string = model.to_json()
+    # open('CNN_model_architecture.json', 'w').write(json_string)
