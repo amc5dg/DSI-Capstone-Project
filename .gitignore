@@ -2,3 +2,4 @@ data/*_images/
 data/galaxy_zoo*
 data/*.npy
 data/old_csvs/*
+scripts/*weights*
