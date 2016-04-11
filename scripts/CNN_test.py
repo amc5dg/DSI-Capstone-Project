@@ -1,12 +1,17 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
+import pandas as pd
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.optimizers import SGD
+
+from sklearn.metrics import classification_report, confusion_matrix
+
+path_to_project_data = '/home/ubuntu/DSI-Capstone-Project/data/'
 
 '''
 Galaxy Zoo Net Architecture:
@@ -41,10 +46,12 @@ def convert_targets(targets):
     output: targets dummified category matrix
     note: targets are indexed as ['elliptical', 'merger', 'spiral']
     '''
-    return pd.get_dummies(targets).values
+    # return pd.get_dummies(targets).values
+    # because I'm running the data on only spirals...
+    np_utils.to_categorical(pd.get_dummies(y_test).values, 3)
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 3):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3, nb_epoch = 1):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -70,56 +77,73 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
 
     # first convolutional layer and subsequent pooling
     # model.add(Convolution2D(32, 1, 1, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', subsample=(1, 1)))
-    model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.save_weights('weights1_2')
 
     # second convolutional layer and subsequent pooling
-    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='normal'))
+    model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', init='normal'))
+    # model.save_weights('weights2')
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.save_weights('weights2_3')
 
     # third convolutional layer
     model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
+    # model.save_weights('weights3_4')
 
     # fourth convolutional layer and subsequent pooling
     model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
+    # model.save_weights('weights4')
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.save_weights('weights4_5')
 
     # flattens images to go into dense layers
     model.add(Flatten())
+    
+    # model.save_weights('weights_after_flatten')
 
     # first dense layer
     model.add(MaxoutDense(2048))
     #model.add(Activation('relu'))
     model.add(Dropout(0.5))
+    # model.save_weights('weights_5_6')
 
     # second dense layer
     model.add(MaxoutDense(2048, init='normal'))
     #model.add(Activation('maxout'))
     model.add(Dropout(0.5))
-
-    # test dense layer, remove
-    # model.add(Dense(50, init='normal'))
-    # model.add(Activation('relu'))
-    # model.add(Dropout(0.25))
+    # model.save_weights('weights_6_7')
 
     # output layer
     model.add(Dense(3, init='normal'))
     model.add(Activation('softmax'))
+    # model.save_weights('end_weights')
 
     # initializes optimizer
-    sgd = SGD(lr=0.04, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
 
     # compiles and fits model, computes accuracy
     model.compile(loss='categorical_crossentropy', optimizer=sgd)
-    # print(np.unique(y_train))
+   
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
-    return model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
+    return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
 
+
+def scores(model, X_test, y_test):
+    '''
+    input: model (keras model), X_test ( 4D np array of images), y_test (1D np array of labels)
+    output: None
+    '''
+    y_pred = model.predict_classes(X_test)
+    y_true = pd.get_dummies(y_test).values.argmax(1)
+    print(classification_report(y_true, y_pred))
+    print(confusion_matrix(y_true, y_pred))
 
 
 if __name__ == '__main__':
-    files = ['X_train.npy', 'X_test.npy', 'y_train.npy', 'y_test.npy']
-    X_train, X_test, y_train, y_test = (np.load(file) for file in files)
+    files = ['X_train_spirals.npy', 'X_test_spirals.npy', 'y_train_spirals.npy', 'y_test_spirals.npy']
+    X_train, X_test, y_train, y_test = (np.load(path_to_project_data+file) for file in files)
     # np.random.seed(18)  # for reproducibility
 
-    results = nn_model(X_train, y_train, X_test, y_test)
+    model, results = nn_model(X_train, y_train, X_test, y_test)
+    scores(model, X_test, y_test)

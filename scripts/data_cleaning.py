@@ -11,8 +11,10 @@ and splits individually, compiles images from coordinates, augments training set
 to combat class imbalance, resizes and crops images, randomly recentering training set.
 '''
 
-path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
-galaxy_types = ['spiral', 'elliptical', 'merger']
+# path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
+path_to_project_data = '/home/ubuntu/DSI-Capstone-Project/data/'
+# galaxy_types = ['spiral', 'elliptical', 'merger']
+galaxy_types = ['spiral']
 
 def load_images(df, typ):
     '''
@@ -78,8 +80,8 @@ def augment_data(im_list, targets, test=False):
         return cropped, targets
     else:
         # number of copies of images to make to get balanced classes in training set
-        #n_copies = int(round(333,000./len(im_list), 0))
-        n_copies = int(round(16667./len(im_list), 0))
+        n_copies = int(round(333000./len(im_list), 0))
+        # n_copies = int(round(16667./len(im_list), 0))
         # extends list of targets
         targets = np.array(targets.flatten().tolist()*n_copies)
         # randomly transforms and crops each image, making n_copies altered images
@@ -102,8 +104,8 @@ def get_data():
     train_images, test_images, train_targets, test_targets = [], [], [], []
     for typ in galaxy_types:
         # read in dataframe
-        # df = pd.read_csv(path_to_project_data+'{}_galaxies.csv'.format(typ))
-        df = pd.read_csv(path_to_project_data+'{}_test.csv'.format(typ))
+        df = pd.read_csv(path_to_project_data+'{}_galaxies.csv'.format(typ))
+        # df = pd.read_csv(path_to_project_data+'{}_test.csv'.format(typ))
         # get un-augmented image lists and target arrays
         X_train, X_test, y_train, y_test = get_train_test_splits(df)
         # get augmented training and test images and targets
@@ -122,7 +124,7 @@ def get_data():
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = get_data()
     # saving files so that they don't need to be re-written each time
-    np.save(X_train.npy, X_train)
-    np.save(X_test.npy, X_test)
-    np.save(y_train.npy, y_train)
-    np.save(y_test.npy, y_test)
+    np.save(path_to_project_data+'X_train_spirals.npy', X_train)
+    np.save(path_to_project_data+'X_test_spirals.npy', X_test)
+    np.save(path_to_project_data+'y_train_spirals.npy', y_train)
+    np.save(path_to_project_data+'y_test_spirals.npy', y_test)

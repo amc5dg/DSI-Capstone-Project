@@ -70,7 +70,7 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
     n_train, n_test = X_train.shape[0], X_test.shape[0]
 
     # scale images
-    X_train, X_test = scale_features(X_train), scale_features(X_test)
+    # X_train, X_test = scale_features(X_train), scale_features(X_test)
 
     # reshape images because keras is being picky
     X_train = X_train.reshape(n_train, 60, 60, 3)
@@ -85,11 +85,11 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 3,
 
     # first convolutional layer and subsequent pooling
     # model.add(Convolution2D(32, 1, 1, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', subsample=(1, 1)))
-    model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # second convolutional layer and subsequent pooling
-    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='normal'))
+    model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', init='normal'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # third convolutional layer
@@ -139,8 +139,8 @@ def scores(model, X_test, y_test):
     '''
     y_pred = model.predict_classes(X_test)
     y_true = pd.get_dummies(y_test).values.argmax(1)
-    print classification_report(y_true, y_pred)
-    print confusion_matrix(y_true, y_pred)
+    print(classification_report(y_true, y_pred))
+    print(confusion_matrix(y_true, y_pred))
 
 
 if __name__ == '__main__':
@@ -149,4 +149,4 @@ if __name__ == '__main__':
     # np.random.seed(18)  # for reproducibility
 
     model, results = nn_model(X_train, y_train, X_test, y_test)
-    print scores(model, X_test, y_test)
+    scores(model, X_test, y_test)
