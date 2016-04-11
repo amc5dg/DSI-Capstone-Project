@@ -67,5 +67,5 @@ if __name__ == '__main__':
     galaxies = clean_galaxies()
 
     for typ in galaxy_types:
-        df = separate_galaxies(galaxies, typ)
+        df = separate_galaxies(galaxies, typ, thresh=0.666)
         get_coords_file(df, outfile='{}_coords.csv'.format(typ))
