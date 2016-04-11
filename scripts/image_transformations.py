@@ -1,3 +1,7 @@
+'''
+Contains various functions to transform images (must be loaded as np arrays)
+'''
+
 import numpy as np
 import scipy.stats as scs
 
