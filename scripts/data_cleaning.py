@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as scs
 import pandas as pd
 from image_transformations import *
-from skimage import io, transform
+from skimage import io, transform, color
 from sklearn.cross_validation import train_test_split
 
 '''
@@ -34,6 +34,14 @@ def resize_image(image, output_shape):
     return transform.resize(image, output_shape)
 
 
+def hsv_image(image):
+    '''
+    input: image (np array)
+    output: np array
+    '''
+    return color.rgb2hsv(image)
+
+
 def get_train_test_splits(df):
     '''
     input: df (pd DataFrame)
@@ -62,13 +70,14 @@ def modify_images(image, n):
                 transpose, reflect_diagonal, horiz_mirror, vert_mirror])
     # list of n transformations on images
     mod_images = [transforms[np.random.randint(0,8)](image) for i in xrange(n)]
-    # crops images to 45 x 45 and translates randomly
+    # crops images and translates randomly
     return [translate_and_crop(im, xform=True) for im in mod_images]
 
 
-def augment_data(im_list, targets, test=False):
+def augment_data(im_list, targets, test=False, hsv=False):
     '''
     input: im_list (list of np arrays of images), targets (1D np array)
+    test (Bool, optional, default = False), hsv (Bool, optional, default = False)
     rotate, translate, skew, crop images to put into neural net
     output: cropped (modified image list), targets
     '''
@@ -78,24 +87,31 @@ def augment_data(im_list, targets, test=False):
         # crop image in center to (45, 45)
         # cropped = [translate_and_crop(im) for im in resized]
         cropped = [translate_and_crop(im) for im in im_list]
-        return cropped, targets
+        if hsv:
+             # tranforms images to hsv space if selected
+            targets = [hsv_image(im) for im in targets]
+            cropped = [hsv_image(cr) for cr in cropped]
     else:
         # number of copies of images to make to get balanced classes in training set
         # n_copies = int(round(333000./len(im_list), 0))
-        n_copies = int(round(6250./len(im_list), 0))
+        n_copies = int(round(10000./len(im_list), 0))
         # extends list of targets
         targets = np.array(targets.flatten().tolist()*n_copies)
         # randomly transforms and crops each image, making n_copies altered images
         cropped = []
         for im in im_list:
-        # for im in resized:
             cropped.extend(modify_images(im, n_copies))
-        return cropped, targets
+        if hsv:
+             # tranforms images to hsv space if selected
+	    targets = [hsv_image(im) for im in targets]
+	    cropped = [hsv_image(cr) for cr in cropped]
+    
+    return cropped, targets
 
 
-def get_data():
+def get_data(hsv=False):
     '''
-    input: None
+    input: hsv (Bool, optional, default=False)
     reads in dataframes, splits into train and test sets, processes images, and
     combines train and test sets.
     output: X_train (list of image arrays), X_test (list of image arrays),
@@ -110,8 +126,8 @@ def get_data():
         # get un-augmented image lists and target arrays
         X_train, X_test, y_train, y_test = get_train_test_splits(df)
         # get augmented training and test images and targets
-        train_im, train_targ = augment_data(X_train, y_train, test=False)
-        test_im, test_targ = augment_data(X_test, y_test, test=True)
+        train_im, train_targ = augment_data(X_train, y_train, test=False, hsv=hsv)
+        test_im, test_targ = augment_data(X_test, y_test, test=True, hsv=hsv)
         # extend all lists
         train_images.extend(train_im)
         test_images.extend(test_im)
@@ -123,9 +139,9 @@ def get_data():
 
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = get_data()
+    X_train, X_test, y_train, y_test = get_data(hsv=True)
     # saving files so that they don't need to be re-written each time
-    np.save(path_to_project_data+'X_train_small.npy', X_train)
-    np.save(path_to_project_data+'X_test_small.npy', X_test)
-    np.save(path_to_project_data+'y_train_small.npy', y_train)
-    np.save(path_to_project_data+'y_test_small.npy', y_test)
+    np.save(path_to_project_data+'X_train_hsv_small.npy', X_train)
+    np.save(path_to_project_data+'X_test_hsv_small.npy', X_test)
+    np.save(path_to_project_data+'y_train_hsv_small.npy', y_train)
+    np.save(path_to_project_data+'y_test_hsv_small.npy', y_test)
