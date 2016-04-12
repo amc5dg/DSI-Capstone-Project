@@ -87,10 +87,6 @@ def augment_data(im_list, targets, test=False, hsv=False):
         # crop image in center to (45, 45)
         # cropped = [translate_and_crop(im) for im in resized]
         cropped = [translate_and_crop(im) for im in im_list]
-        if hsv:
-             # tranforms images to hsv space if selected
-            targets = [hsv_image(im) for im in targets]
-            cropped = [hsv_image(cr) for cr in cropped]
     else:
         # number of copies of images to make to get balanced classes in training set
         # n_copies = int(round(333000./len(im_list), 0))
@@ -101,10 +97,9 @@ def augment_data(im_list, targets, test=False, hsv=False):
         cropped = []
         for im in im_list:
             cropped.extend(modify_images(im, n_copies))
-        if hsv:
-             # tranforms images to hsv space if selected
-	    targets = [hsv_image(im) for im in targets]
-	    cropped = [hsv_image(cr) for cr in cropped]
+    if hsv:
+         # tranforms images to hsv space if selected	   
+         cropped = [hsv_image(im) for im in cropped]
     
     return cropped, targets
 
