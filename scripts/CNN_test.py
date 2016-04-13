@@ -7,8 +7,9 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from keras.callbacks import EarlyStopping
+from keras import backend as K
 
 from sklearn.metrics import classification_report, confusion_matrix
 
@@ -52,7 +53,16 @@ def convert_targets(targets):
     # np_utils.to_categorical(pd.get_dummies(y_test).values, 3)
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 4, nb_epoch = 30):
+def recall_loss(y_true, y_pred):
+    '''
+    input: y_true (theano Tensor), y_pred (theano Tensor)
+    output: recall_loss (float)
+    '''
+    # print(K.ndim(y_true), K.ndim(y_pred))
+    return -np.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
+
+
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, nb_epoch = 40):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -77,58 +87,57 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 100, nb_classes = 4,
     model = Sequential()
 
     # first convolutional layer and subsequent pooling
-    model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='normal'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='glorot_normal'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
     # model.save_weights('weights1_2')
 
     # second convolutional layer and subsequent pooling
-    model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', init='normal'))
+    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='glorot_normal'))
     # model.save_weights('weights2')
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # model.save_weights('weights2_3')
 
     # third convolutional layer
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal'))
     # model.save_weights('weights3_4')
 
     # fourth convolutional layer and subsequent pooling
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='normal'))
-    # model.save_weights('weights4')
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.save_weights('weights4_5')
 
     # flattens images to go into dense layers
     model.add(Flatten())
-    
-    # model.save_weights('weights_after_flatten')
 
     # first dense layer
-    model.add(MaxoutDense(2048))
-    #model.add(Activation('relu'))
+    model.add(Dense(2048, init = 'glorot_normal'))
+    # model.add(MaxoutDense(2048))
+    model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    # model.save_weights('weights_5_6')
 
     # second dense layer
-    model.add(MaxoutDense(2048, init='normal'))
-    #model.add(Activation('maxout'))
+    model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    # model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    # model.save_weights('weights_6_7')
+
+    # third dense layer
+    # model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    # model.add(Dropout(0.5))
 
     # output layer
-    model.add(Dense(4, init='normal'))
+    model.add(Dense(4, init='glorot_normal'))
     model.add(Activation('softmax'))
-    # model.save_weights('end_weights')
 
     # initializes optimizer
-    sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.001)
+    # adam = Adam(lr = 0.01)
+
+    # initializes early stopping callback
+    early_stopping = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
     # compiles and fits model, computes accuracy
-    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+    model.compile(loss='binary_crossentropy', optimizer=sgd)
    
-    model.fit(X_train, Y_train, show_accuracy=True, verbose=1, batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
-    
-    # Early stopping if validation loss is plateauing
-    model.add(EarlyStopping(monitor='val_loss', patience=1, verbose=1, mode='auto'))
+    model.fit(X_train, Y_train, show_accuracy=True, verbose=1, callbacks = [early_stopping], batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
 
     return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
 
