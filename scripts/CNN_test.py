@@ -128,7 +128,7 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Activation('softmax'))
 
     # initializes optimizer
-    sgd = SGD(lr=0.001)
+    sgd = SGD(lr=0.005)
     # adam = Adam(lr = 0.01)
 
     # initializes early stopping callback
