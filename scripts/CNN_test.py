@@ -115,13 +115,16 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Dropout(0.5))
 
     # second dense layer
-    model.add(MaxoutDense(2048, init = 'glorot_normal'))
-    # model.add(Activation('relu'))
+    #model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    model.add(Dense(2048, init = 'glorot_normal'))
+    model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     # third dense layer
+    model.add(Dense(2048, init = 'glorot_normal'))
+    model.add(Activation('relu'))
     # model.add(MaxoutDense(2048, init = 'glorot_normal'))
-    # model.add(Dropout(0.5))
+    model.add(Dropout(0.5))
 
     # output layer
     model.add(Dense(4, init='glorot_normal'))

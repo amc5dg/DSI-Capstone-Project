@@ -7,7 +7,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
-from keras.optimizers import SGD, Adam
+from keras.optimizers import SGD, Adam, Adamax
 from keras.callbacks import EarlyStopping
 from keras import backend as K
 
@@ -120,22 +120,22 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Dropout(0.5))
 
     # third dense layer
-    # model.add(MaxoutDense(2048, init = 'glorot_normal'))
-    # model.add(Dropout(0.5))
+    #model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    #model.add(Dropout(0.5))
 
     # output layer
     model.add(Dense(4, init='glorot_normal'))
     model.add(Activation('softmax'))
 
     # initializes optimizer
-    sgd = SGD(lr=0.005, decay = 1e-6, momentum = 0.9, nesterov=True)
-    # adam = Adam(lr = 0.01)
+    #sgd = SGD(lr=0.005, decay = 1e-6, momentum = 0.9, nesterov=True)
+    adamax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
     # initializes early stopping callback
     early_stopping = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
     # compiles and fits model, computes accuracy
-    model.compile(loss='binary_crossentropy', optimizer=sgd)
+    model.compile(loss='binary_crossentropy', optimizer=adamax)
    
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, callbacks = [early_stopping], batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
 

@@ -98,8 +98,8 @@ def augment_data(im_list, targets, test=False, hsv=False):
         for im in im_list:
             cropped.extend(modify_images(im, n_copies))
     if hsv:
-         # tranforms images to hsv space if selected	   
-         cropped = [hsv_image(im) for im in cropped]
+         # tranforms images to hsv space and stacks onto image channels if selected	   
+         cropped = [np.concatenate([im, hsv_image(im)], axis=2) for im in cropped]
     
     return cropped, targets
 
@@ -134,9 +134,9 @@ def get_data(hsv=False):
 
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = get_data(hsv=True)
+    X_train, X_test, y_train, y_test = get_data()
     # saving files so that they don't need to be re-written each time
-    np.save(path_to_project_data+'X_train_hsv_small.npy', X_train)
-    np.save(path_to_project_data+'X_test_hsv_small.npy', X_test)
-    np.save(path_to_project_data+'y_train_hsv_small.npy', y_train)
-    np.save(path_to_project_data+'y_test_hsv_small.npy', y_test)
+    np.save(path_to_project_data+'X_train_small.npy', X_train)
+    np.save(path_to_project_data+'X_test_small.npy', X_test)
+    np.save(path_to_project_data+'y_train_small.npy', y_train)
+    np.save(path_to_project_data+'y_test_small.npy', y_test)
