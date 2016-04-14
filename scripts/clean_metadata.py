@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
-galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
+# galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
+galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger']
 
 def clean_galaxies():
     '''
@@ -16,8 +17,8 @@ def clean_galaxies():
     # change column names for readability
     galaxies.columns = ['RA', 'DEC', 'nvotes', 'elliptical', 'clockwise', \
         'anticlockwise', 'edge_on_disk', 'dont_know', 'merger', 'combined_spiral']
-    # creates spiral column with all spiral classes
-    galaxies['face_on_spiral'] = galaxies.clockwise + galaxies.anticlockwise
+    # creates face on spiral column with clockwise spiral classes
+    galaxies['face_on_spiral'] = galaxies[['clockwise', 'anticlockwise']].max(axis=1)
     # dropping directional spiral columns and combined for now
     galaxies.drop(['clockwise', 'anticlockwise', 'combined_spiral'], axis=1, inplace=True)
     # gets rid of random nan row with nans
@@ -25,6 +26,8 @@ def clean_galaxies():
     # adds column listing the max class
     max_class = max_col(galaxies, galaxy_types)
     galaxies = pd.concat([galaxies, max_class], axis=1)
+    # normalizes probabilities of remaining columns
+    galaxies = renorm_probs(galaxies)
     return galaxies
 
 
@@ -40,6 +43,17 @@ def max_col(df, col_names):
     max_class = np.array(col_names)[types.values.argmax(axis=1)]
 
     return pd.Series(max_class, name='type')
+
+
+def renorm_probs(df):
+    '''
+    input: df (pd DataFrame)
+    output: df (pd DataFrame)
+    '''
+    df.norm = df[galaxy_types].sum(axis=1)
+    for typ in galaxy_types:
+        df[typ] = df[typ] / df.norm
+    return df
 
 
 def separate_galaxies(galaxies, clss, thresh=0.6):
