@@ -62,7 +62,7 @@ def recall_loss(y_true, y_pred):
     return -np.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, nb_epoch = 40):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 20, nb_classes = 4, nb_epoch = 40):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -120,8 +120,13 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Dropout(0.5))
 
     # third dense layer
-    #model.add(MaxoutDense(2048, init = 'glorot_normal'))
-    #model.add(Dropout(0.5))
+    model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    model.add(Dropout(0.5))
+
+    # fourth dense layer
+    model.add(Dense(1024, init = 'uniform'))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
 
     # output layer
     model.add(Dense(4, init='glorot_normal'))
