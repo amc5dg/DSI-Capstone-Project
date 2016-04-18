@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
-# galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
-galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger']
+galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
+#galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger']
 
 def clean_galaxies():
     '''
