@@ -17,12 +17,15 @@ I obtained coordinates, number of crowd-sourced votes, and percentage of votes f
 ### Data Munging and Image Pre-Processing
 
 Using these data, I assigned each image to a class and trained
-the network to classify galaxies as spirals face on or edge on,
-ellipticals, or mergers. 
+the network to classify galaxies as edge-on or face-on spirals,
+ellipticals, or mergers.
+
+Example images of each data type are shown below
+
+![](presentation/galaxy_examples.png)
 
 ### Neural Network Architecture
 
 Stay tuned for more details!
 
 ![](presentation/neural_net_architecture.png)
-<img src="presentation/neural_net_architecture.png" width="250">
