@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from image_transformations import *
 # import seaborn
+from scipy.ndimage import filters
 
 path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
 path_to_project_presentation = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/presentation/'
@@ -106,89 +107,32 @@ def plot_model_results(recalls, precisions, plotname):
     plt.savefig(plotname)
 
 
-def preprocess(image):
+def vis_preprocess(image, outname1, outname2):
     '''
     input: image (np array)
-    downsamples image to 120 by 120, randomly rotates or mirrors, then re-centers and crops to 60x60
-    output: image (np array)
+    downsamples image to 120 by 120, randomly rotates or mirrors, then
+    re-centers and crops to 60x60
+    output: None (saves images to disk)
     '''
+    # downsamples image
     resize_im = transform.resize(image, (120, 120))
+    # saves resized to disk
+    io.imsave(outname1, resize_im)
     # list of possible image transformations
     transforms = np.array([rotate_0, rotate_90, rotate_180, rotate_270, \
                 transpose, reflect_diagonal, horiz_mirror, vert_mirror])
     # randomly modifies image
     mod_image = transforms[np.random.randint(0,8)](resize_im)
     # randomly recenters and crops
-    return translate_and_crop(mod_image)
+    crop_im = translate_and_crop(mod_image)
+    # saves cropped image
+    io.imsave(outname2, crop_im)
 
-
-def visualize_convolution(image, model):
-    '''
-    input: image (np array), model (keras model),
-    output: image (np array)
-    '''
-    pass
-
-
-def plt_all_image(name):
-    '''
-    input: name(str)
-    output: image (np array)
-    '''
-    name = name.lower().replace(' ', '_')
-    # grabs dataframe belonging to name class
-    df = pd.read_csv(path_to_project_data+'{}.csv'.format(name))
-    # gets top entry with 100% probability of class membership
-    data = df.query('{} == 1.0'.format(name))
-    data.RA = data.RA.apply(lambda x: round(x, 3))
-    data.DEC = data.DEC.apply(lambda x: round(x, 3))
-    if name == 'edge_on_disk' or name == 'face_on_spiral':
-        filelist = [path_to_project_data+'spiral_images/{}_{}.jpg'.format(ra, dec) for ra, dec in data[['RA', 'DEC']].itertuples(index=False)]
-    else:
-        filelist = [path_to_project_data+'{}_images/{}_{}.jpg'.format(name, ra, dec) for ra, dec in data[['RA', 'DEC']].itertuples(index=False)]
-    images = io.imread_collection(filelist)
-    rows = int(np.sqrt(len(images))) + 1
-    plt.clf()
-    for i, image in enumerate(images):
-        plt.subplot(rows, rows, i+1, axisbg='k')
-        plt.imshow(image)
-        plt.axis('off')
-    plt.savefig('perfect_{}_galaxies.jpg'.format(name))
-
-
-def plot_pipeline(image, plotname):
-    '''
-    input: image (np array)
-    plots image at all stages of processing
-    output: None (saves plot to disk)
-    '''
-    # instantiates figure
-    fig = plt.figure()
-    # shows original image
-    fig.add_axes([0.1, 0.55, 0.35, 0.35])
-    plt.imshow(image)
-    plt.axis('off')
-    plt.title('Original Image')
-    # shows downsampled, translated and cropped image
-    fig.add_axes([0.55, 0.55, 0.35, 0.35])
-    mod_image = preprocess(image)
-    plt.imshow(mod_image)
-    plt.axis('off')
-    plt.title('Image after preprocessing')
-    # shows convolved image
-    fig.add_axes([0.55, 0.1, 0.35, 0.35])
-    conv_image = mod_image
-    plt.imshow(conv_image)
-    plt.axis('off')
-    plt.title('Image after convolutional layers')
-
-    # maybe show predictions, maybe features?
-    plt.savefig(plotname)
 
 if __name__ == '__main__':
-    class_images, mergers = load_images()
+    # class_images, mergers = load_images()
     # galaxy_examples(class_images, path_to_project_presentation+'galaxy_examples.png')
     # plot_mergers(mergers, path_to_project_presentation+'merger_examples.png')
     # plot_model_results([0.96, 0.96, 0.84, 0.89], [0.95, 1.00, 0.99, 0.03], path_to_project_presentation+'model_results.png')
     andromeda = io.imread(path_to_project_presentation+'Andromeda.jpg')
-    plot_pipeline(andromeda, path_to_project_presentation+'testing_andromeda.png')
+    vis_preprocess(andromeda, path_to_project_presentation+'downsampled_andromeda.jpg', path_to_project_presentation+'cropped_andromeda.jpg')
