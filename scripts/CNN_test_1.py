@@ -62,7 +62,7 @@ def recall_loss(y_true, y_pred):
     return -np.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 20, nb_classes = 4, nb_epoch = 40):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 4, nb_epoch = 40):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -140,11 +140,12 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 20, nb_classes = 4, 
     early_stopping = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
     # compiles and fits model, computes accuracy
-    model.compile(loss='binary_crossentropy', optimizer=adamax)
+    model.compile(loss = 'binary_crossentropy', optimizer = adamax)
    
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, callbacks = [early_stopping], batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
 
     return model, model.evaluate(X_test, Y_test, show_accuracy=True, verbose=1)
+
 
 def scores(model, X_test, y_test):
     '''
@@ -158,7 +159,7 @@ def scores(model, X_test, y_test):
 
 
 if __name__ == '__main__':
-    files = ['X_train_small.npy', 'X_test_small.npy', 'y_train_small.npy', 'y_test_small.npy']
+    files = ['X_train_full.npy', 'X_test_full.npy', 'y_train_full.npy', 'y_test_full.npy']
     X_train, X_test, y_train, y_test = (np.load(path_to_project_data+file) for file in files)
     # np.random.seed(18)  # for reproducibility
 

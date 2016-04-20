@@ -27,4 +27,4 @@ def subset_df(infile, outfile, max_rows = 6250):
 
 if __name__ == "__main__":
     for typ in galaxy_types:
-        subset_df(path_to_project_data+'{}.csv'.format(typ), path_to_project_data+'{}_test.csv'.format(typ))
+        subset_df(path_to_project_data+'{}.csv'.format(typ), path_to_project_data+'{}_full.csv'.format(typ), max_rows = 25000)
