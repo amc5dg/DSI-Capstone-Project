@@ -6,4 +6,3 @@ scripts/*weights*
 data/*.csv
 data/*.json
 data/*.h5
-
