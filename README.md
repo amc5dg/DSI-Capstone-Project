@@ -56,6 +56,7 @@ I am unable to load the trained model to github due to size restrictions, but if
 A great thank you to all of the instructors and my fellow classmates at Galvanize, whose assistance throughout this class and with this project has been invaluable, and whom I drew inspiration from each and every day.
 
 References that gave me jumping off points:
+
 [Andrej Karpathy Neural Networks Lectures](https://www.youtube.com/watch?v=gYpoJMlgyXA)
 
 [Dieleman, S. et al. 2014](http://arxiv.org/pdf/1503.07077.pdf)
