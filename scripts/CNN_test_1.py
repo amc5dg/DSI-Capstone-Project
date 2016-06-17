@@ -88,22 +88,18 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 4, 
 
     # first convolutional layer and subsequent pooling
     model.add(Convolution2D(32, 5, 5, border_mode='valid', input_shape=(60, 60, 3), activation='relu', dim_ordering='tf', init='glorot_normal'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.save_weights('weights1_2')
+    model.add(MaxPooling2D(pool_size=(2, 2), dim_ordering='tf'))
 
     # second convolutional layer and subsequent pooling
-    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='glorot_normal'))
-    # model.save_weights('weights2')
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.save_weights('weights2_3')
+    model.add(Convolution2D(64, 5, 5, border_mode='valid', activation='relu', init='glorot_normal', dim_ordering='tf'))
+    model.add(MaxPooling2D(pool_size=(2, 2), dim_ordering='tf'))
 
     # third convolutional layer
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal'))
-    # model.save_weights('weights3_4')
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal', dim_ordering='tf'))
 
     # fourth convolutional layer and subsequent pooling
-    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Convolution2D(128, 3, 3, border_mode='valid', activation='relu', init='glorot_normal', dim_ordering='tf'))
+    model.add(MaxPooling2D(pool_size=(2, 2), dim_ordering='tf'))
 
     # flattens images to go into dense layers
     model.add(Flatten())
@@ -140,7 +136,7 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 4, 
     early_stopping = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
     # compiles and fits model, computes accuracy
-    model.compile(loss = 'binary_crossentropy', optimizer = adamax)
+    model.compile(loss = 'categorical_crossentropy', optimizer = adamax)
    
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, callbacks = [early_stopping], batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
 
@@ -165,3 +161,8 @@ if __name__ == '__main__':
 
     model, results = nn_model(X_train, y_train, X_test, y_test)
     scores(model, X_test, y_test)
+
+    model.save_weights('new_model_weights_2.h5')
+    json_string = model.model_to_json()
+    with open('new_CNN_model_architecture_2.json', 'w') as f:
+        f.write(json_string)

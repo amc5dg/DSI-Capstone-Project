@@ -75,7 +75,7 @@ def modify_images(image, n):
     return [translate_and_crop(im, xform=True) for im in mod_images]
 
 
-def augment_data(im_list, filelist, targets, test=False, hsv=False):
+def augment_data(im_list, filelist, targets, test=False, hsv=False, merger=False):
     '''
     input: im_list (list of np arrays of images), filelist (list of images in order of imlist,
     targets (1D np array), test (Bool, optional, default = False), 
@@ -83,17 +83,16 @@ def augment_data(im_list, filelist, targets, test=False, hsv=False):
     rotate, translate, skew, crop images to put into neural net
     output: cropped (modified image list), files (list of files), targets
     '''
-    # resize image to (90, 90)
-    # resized = [resize_image(im, (90, 90)) for im in im_list]
     if test:
-        # crop image in center to (45, 45)
-        # cropped = [translate_and_crop(im) for im in resized]
+        # crop image in center to (60, 60)
         cropped = [translate_and_crop(im) for im in im_list]
         files = filelist
     else:
-        # number of copies of images to make to get balanced classes in training set
-        # n_copies = int(round(333000./len(im_list), 0))
-        n_copies = min(25, int(round(10000./len(im_list), 0)))
+        # number of copies of images to augment minority classes in training set
+	if merger:
+	    n_copies = 15
+	else:
+            n_copies = int(round(33000./len(im_list), 0))
         # extends list of targets
         targets = np.array(targets.flatten().tolist()*n_copies)
         # randomly transforms and crops each image, making n_copies altered images, 
@@ -121,12 +120,15 @@ def get_data(hsv=False):
     train_images, test_images, train_targets, test_targets, train_files, test_files = [], [], [], [], [], []
     for typ in galaxy_types:
         # read in dataframe
-        # df = pd.read_csv(path_to_project_data+'{}_galaxies.csv'.format(typ))
-        df = pd.read_csv(path_to_project_data+'{}_test.csv'.format(typ))
+        df = pd.read_csv(path_to_project_data+'{}_full.csv'.format(typ))
+        #df = pd.read_csv(path_to_project_data+'{}_test.csv'.format(typ))
         # get un-augmented image lists and target arrays
         X_train, X_test, y_train, y_test, train_list, test_list = get_train_test_splits(df)
         # get augmented training and test images and targets
-        train_im, train_file, train_targ = augment_data(X_train, train_list, y_train, test=False, hsv=hsv)
+        if typ == 'merger':
+	    train_im, train_file, train_targ = augment_data(X_train, train_list, y_train, test=False, hsv=hsv, merger=True)
+	else:
+            train_im, train_file, train_targ = augment_data(X_train, train_list, y_train, test=False, hsv=hsv)
         test_im, test_file, test_targ = augment_data(X_test, test_list, y_test, test=True, hsv=hsv)
         # extend all lists
         train_images.extend(train_im)
@@ -155,4 +157,4 @@ def save_outputs(X_train, X_test, y_train, y_test, train_files, test_files, exte
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test, train_files, test_files = get_data()
     # saving files so that they don't need to be re-written each time
-    save_outputs(X_train, X_test, y_train, y_test, train_files, test_files, 'small')
+    save_outputs(X_train, X_test, y_train, y_test, train_files, test_files, 'all')
