@@ -7,7 +7,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten, MaxoutDense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
-from keras.optimizers import SGD, Adam
+from keras.optimizers import SGD, Adam, Adamax
 from keras.callbacks import EarlyStopping
 from keras import backend as K
 
@@ -62,7 +62,7 @@ def recall_loss(y_true, y_pred):
     return -np.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
 
 
-def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, nb_epoch = 40):
+def nn_model(X_train, y_train, X_test, y_test, batch_size = 16, nb_classes = 4, nb_epoch = 40):
     # need to fix docs for X_train and X_test as these should be 3D or 4D arrays
     '''
     input: X_train (4D np array), y_train (1D np array), X_test (4D np array), y_test (1D np array)
@@ -115,15 +115,17 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Dropout(0.5))
 
     # second dense layer
-    #model.add(MaxoutDense(2048, init = 'glorot_normal'))
-    model.add(Dense(2048, init = 'glorot_normal'))
-    model.add(Activation('relu'))
+    model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    # model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     # third dense layer
-    model.add(Dense(2048, init = 'glorot_normal'))
+    model.add(MaxoutDense(2048, init = 'glorot_normal'))
+    model.add(Dropout(0.5))
+
+    # fourth dense layer
+    model.add(Dense(1024, init = 'uniform'))
     model.add(Activation('relu'))
-    # model.add(MaxoutDense(2048, init = 'glorot_normal'))
     model.add(Dropout(0.5))
 
     # output layer
@@ -131,14 +133,14 @@ def nn_model(X_train, y_train, X_test, y_test, batch_size = 60, nb_classes = 4, 
     model.add(Activation('softmax'))
 
     # initializes optimizer
-    sgd = SGD(lr=0.005)
-    # adam = Adam(lr = 0.01)
+    #sgd = SGD(lr=0.005, decay = 1e-6, momentum = 0.9, nesterov=True)
+    adamax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
     # initializes early stopping callback
     early_stopping = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
     # compiles and fits model, computes accuracy
-    model.compile(loss='binary_crossentropy', optimizer=sgd)
+    model.compile(loss = 'binary_crossentropy', optimizer = adamax)
    
     model.fit(X_train, Y_train, show_accuracy=True, verbose=1, callbacks = [early_stopping], batch_size= batch_size, nb_epoch=nb_epoch, validation_data=(X_test, Y_test))
 
@@ -157,7 +159,7 @@ def scores(model, X_test, y_test):
 
 
 if __name__ == '__main__':
-    files = ['X_train_small.npy', 'X_test_small.npy', 'y_train_small.npy', 'y_test_small.npy']
+    files = ['X_train_full.npy', 'X_test_full.npy', 'y_train_full.npy', 'y_test_full.npy']
     X_train, X_test, y_train, y_test = (np.load(path_to_project_data+file) for file in files)
     # np.random.seed(18)  # for reproducibility
 

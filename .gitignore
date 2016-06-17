@@ -3,3 +3,6 @@ data/galaxy_zoo*
 data/*.npy
 data/old_csvs/*
 scripts/*weights*
+data/*.csv
+data/*.json
+data/*.h5

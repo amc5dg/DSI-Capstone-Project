@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-path_to_project_data = '/Users/tarynheilman/science/DSI/DSI-Capstone-Project/data/'
-# galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
-galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger']
+path_to_project_data = '/home/ubuntu/DSI-Capstone-Project/data/'
+galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger', 'dont_know']
+#galaxy_types = ['face_on_spiral', 'edge_on_disk', 'elliptical', 'merger']
 
 def clean_galaxies():
     '''
@@ -17,7 +17,7 @@ def clean_galaxies():
     # change column names for readability
     galaxies.columns = ['RA', 'DEC', 'nvotes', 'elliptical', 'clockwise', \
         'anticlockwise', 'edge_on_disk', 'dont_know', 'merger', 'combined_spiral']
-    # creates face on spiral column with clockwise spiral classes
+    # creates face on spiral column with clockwise and anticlockwise spiral classes
     galaxies['face_on_spiral'] = galaxies[['clockwise', 'anticlockwise']].max(axis=1)
     # dropping directional spiral columns and combined for now
     galaxies.drop(['clockwise', 'anticlockwise', 'combined_spiral'], axis=1, inplace=True)
@@ -81,5 +81,5 @@ if __name__ == '__main__':
     galaxies = clean_galaxies()
 
     for typ in galaxy_types:
-        df = separate_galaxies(galaxies, typ, thresh=0.666)
+        df = separate_galaxies(galaxies, typ, thresh=0.95)
         get_coords_file(df, outfile='{}_coords.csv'.format(typ))
