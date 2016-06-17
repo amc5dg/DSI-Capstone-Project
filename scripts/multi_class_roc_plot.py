@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from clean_test import load_clean_data
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.cross_validation import train_test_split
-from predict import *
+from predict import load_model, predict_many
 
 
 classes = ['Edge-on Disk', 'Elliptical', 'Face-on Spiral', 'Merger']
 path_to_project_data = '/home/ubuntu/DSI-Capstone-Project/data/'
+path_to_project_presentation = '/home/ubuntu/DSI-Capstone-Project/presentation/'
 
 
 def get_rates(y_true, y_pred, thresh=1):
@@ -31,32 +29,32 @@ def plot_one_curve(y_test, y_pred, label):
         TPR, FPR = get_rates(y_test, y_pred, thresh=thresh)
         tprs.append(TPR)
         fprs.append(FPR)
-	# plots
+    # plots
     plt.plot(fprs, tprs, label = label)
 
 
 
-def plot_roc(y_test, probs, plotname = 'roc_plt.png'):
-	'''
-	input: y_test (np array), probs (np array), plotname (string)
-	output: None (saves plot to disk)
-	'''
+def plot_roc(y_test, probs, plotname = path_to_project_presentation+'roc_plt.png'):
+    '''
+    input: y_test (np array), probs (np array), plotname (string)
+    output: None (saves plot to disk)
+    '''
     plt.clf()
     # plots 45 degree angle line for reference
     z = np.linspace(0,1)
     plt.plot(z, z, ls='dotted')
-	for i, lbl in enumerate(classes):
-		plot_one_curve(y_test, probs[:,i], lbl)
+    for i, lbl in enumerate(classes):
+	plot_one_curve(y_test, probs[:,i], lbl)
     plt.xlabel('False Positive Rate (FPR)')
     plt.ylabel('True Positive Rate (TPR)')
     plt.title('ROC Curve')
-	plt.legend()
+    plt.legend()
     plt.savefig(plotname)
 
 
 if __name__ == '__main__':
     model = load_model('CNN_model_architecture.json', 'model_weights.h5')
-	X_test = np.load(path_to_project_data+'X_test_all.npy')
+    X_test = np.load(path_to_project_data+'X_test_all.npy')
     y_test = np.load(path_to_project_data+'y_test_all.npy')
 
     # to predict on many images
