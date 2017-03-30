@@ -59,7 +59,7 @@ def recall_loss(y_true, y_pred):
     output: recall_loss (float)
     '''
     # print(K.ndim(y_true), K.ndim(y_pred))
-    return -np.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
+    return -K.log(K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1))))
 
 
 def nn_model(X_train, y_train, X_test, y_test, batch_size = 20, nb_classes = 4, nb_epoch = 40):
